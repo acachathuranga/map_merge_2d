@@ -3,6 +3,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <atomic>
 
 #include <rclcpp/rclcpp.hpp>
 #include <tf2/LinearMath/Transform.h>
@@ -20,12 +21,16 @@ namespace map_merge_2d
                 nav_msgs::msg::OccupancyGrid map;
                 bool known_pose;
                 tf2::Transform transform_;
+                std::string name_;
             };
 
             SubMap(rclcpp::Node *node, std::string map_topic);
 
             Map get_map(void);
             void update_transform(tf2::Transform transform);
+
+            std::atomic<bool> available;
+            const std::string name;
 
         private:
             void update_map(nav_msgs::msg::OccupancyGrid msg);
