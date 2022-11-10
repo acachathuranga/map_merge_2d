@@ -5,6 +5,9 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Enable debugging
+add_compile_options(-g)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -12,6 +15,7 @@ find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(tf2_ros REQUIRED)
 find_package(nav_msgs REQUIRED)
+find_package( OpenCV REQUIRED )
 
 set(
   DEPENDENCIES
@@ -20,6 +24,8 @@ set(
   tf2_ros
   tf2
   nav_msgs
+  geometry_msgs
+  OpenCV
 )
 
 set(
@@ -27,8 +33,12 @@ set(
   src/map_merger_node.cpp
   src/map_merger.cpp
   src/util/topic_name_utils.cpp
+  src/util/tf_utils.cpp
   src/map_discovery/topic_discovery.cpp
   src/submaps/submap.cpp
+  src/submaps/submap_matcher.cpp
+  src/submaps/submap_merger.cpp
+  src/cv_core/cv_core.cpp
 )
 
 add_executable(map_merger ${SOURCES})

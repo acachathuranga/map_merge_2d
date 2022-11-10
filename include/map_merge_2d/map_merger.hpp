@@ -14,6 +14,8 @@
 #include <map_merge_2d/submaps/submap.hpp>
 #include <map_merge_2d/util/topic_name_utils.hpp>
 #include <map_merge_2d/map_discovery/topic_discovery.hpp>
+#include <map_merge_2d/submaps/submap_matcher.hpp>
+#include <map_merge_2d/submaps/submap_merger.hpp>
 
 namespace map_merge_2d
 {
@@ -24,22 +26,15 @@ namespace map_merge_2d
 
         private:
             void topic_discovery_callback(std::string topic_name);
-
-            std::vector<SubMap> get_submaps();
+            std::vector<std::shared_ptr<SubMap>> get_submaps();
 
             std::shared_ptr<TopicDiscovery> map_discovery_;
+            std::shared_ptr<SubMapMatcher> map_matcher_;
+            std::shared_ptr<SubMapMerger> map_merger_;
 
             // Protected variables - to be accessed with thread safety only
             std::vector<std::shared_ptr<SubMap>> submaps_;
             mutable std::shared_mutex submap_mutex_;
-
-            ///////////////// TODO Delete
-            void timer_callback();
-
-            rclcpp::TimerBase::SharedPtr timer_;
-            rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-            size_t count_;
-            ///////////////// TODO delete
 };
 
 }  // namespace map_merge_2d
