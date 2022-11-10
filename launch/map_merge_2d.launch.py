@@ -32,8 +32,9 @@ def generate_launch_description():
         output='screen',
         # remappings=remappings,
         parameters=[
-          ParameterFile(os.path.join(pkg_dir, 'config', 'params.yaml'), allow_substs=True),
-        ])
+          ParameterFile(os.path.join(pkg_dir, 'config', 'params.yaml'), allow_substs=True)],
+        # prefix=['xterm -e gdb -ex run --args'],
+        emulate_tty=True)
  
     # Create Launch description
     ld = LaunchDescription()

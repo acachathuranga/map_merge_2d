@@ -3,19 +3,27 @@ $(var namespace)/map_merge:
     discovery_rate: 0.5
     map_topic: map
     map_namespace: ssugv
+
     merged_map_topic: merged_map
+
+    matching_rate: 0.3
+    matching_confidence: 0.8
+
+    merging_rate: 0.6
+    publish_merged_map: true
+    publish_tf: true
 
     ssugv1/init_pose_x: 0.0
     ssugv1/init_pose_y: 0.0
     ssugv1/init_pose_z: 0.0
     ssugv1/init_pose_yaw: 0.0
 
-    ssugv2/init_pose_x: 0.0
-    ssugv2/init_pose_y: 0.0
-    ssugv2/init_pose_z: 0.0
-    ssugv2/init_pose_yaw: 0.0
+    # ssugv2/init_pose_x: 0.0
+    # ssugv2/init_pose_y: 0.0
+    # ssugv2/init_pose_z: 0.0
+    # ssugv2/init_pose_yaw: 0.0
 
-    ssugv3/init_pose_x: 0.0
-    ssugv3/init_pose_y: 0.0
-    ssugv3/init_pose_z: 0.0
-    ssugv3/init_pose_yaw: 0.0
+    # ssugv3/init_pose_x: -0.8 #-1.1 #-0.9  # 18
+    # ssugv3/init_pose_y: 2.15 #2.0   # 40
+    # ssugv3/init_pose_z: 0.0
+    # ssugv3/init_pose_yaw: -0.0319 #0.0
