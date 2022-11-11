@@ -58,6 +58,12 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
     std::vector<SubMap::Map> maps;
     for (auto &submap : submaps)
     { 
+        if (!submap->available)
+        {
+            // Abort matching. Unavailable submaps passed
+            return;
+        }
+
         maps.emplace_back(submap->get_map());
     }
 
@@ -69,6 +75,12 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
                                 map.map.info.width, 
                                 CV_8UC1, 
                                 map.map.data.data());
+
+        if (!(cv_maps.back().cols > 0 && cv_maps.back().rows > 0))
+        {
+            // Empty submaps passed
+            return;
+        }
 
         /**
          *  OccupancyGrid 'unknown' areas are denoted by -1

@@ -89,6 +89,12 @@ bool SubMapMerger::merge(std::vector<std::shared_ptr<SubMap>> submaps, nav_msgs:
                                     map.map.info.width,
                                     CV_8UC1,
                                     map.map.data.data());
+        
+        // Check if converted maps are valid
+        if (! (cv_map.rows > 0 && cv_map.cols > 0))
+        {
+            return false;
+        }
 
         cv_core::CVImage transformed_map;
         /* The map transform is inverted, because for merging, we need to remove the existing frame shift */
