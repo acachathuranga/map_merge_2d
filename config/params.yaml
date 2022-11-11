@@ -4,14 +4,14 @@ $(var namespace)/map_merge:
     map_topic: map
     map_namespace: ssugv
 
-    merged_map_topic: merged_map
-
     matching_rate: 0.3
-    matching_confidence: 0.8
+    matching_confidence: 0.5
 
     merging_rate: 0.6
     publish_merged_map: true
     publish_tf: true
+    merged_map_topic: merged_map
+    world_frame: world
 
     ssugv1/init_pose_x: 0.0
     ssugv1/init_pose_y: 0.0

@@ -30,12 +30,16 @@ SubMapMerger::SubMapMerger(rclcpp::Node *node, std::function<std::vector<std::sh
     // Declare parameters
     node_->declare_parameter("merging_rate", 0.3);
     node_->declare_parameter("publish_merged_map", true);
-    node_->declare_parameter("publish_tf", true);
+    node_->declare_parameter("world_frame", "world");
 
     // Get Parameters
     double merging_rate = node_->get_parameter("merging_rate").as_double();
     publish_merged_map_ = node_->get_parameter("publish_merged_map").as_bool();
-    publish_tf_ = node_->get_parameter("publish_tf").as_bool();
+    std::string merged_map_topic = node_->get_parameter("merged_map_topic").as_string();
+    world_frame_ = node_->get_parameter("world_frame").as_string();
+
+    // Create publisher
+    map_publisher_ = node->create_publisher<nav_msgs::msg::OccupancyGrid>(merged_map_topic, 10);
 
     // Create timers
     merging_timer_ = node_->create_wall_timer(std::chrono::duration<double>(1.0/merging_rate),
@@ -93,14 +97,16 @@ bool SubMapMerger::merge(std::vector<std::shared_ptr<SubMap>> submaps, nav_msgs:
                                             map.map.info.resolution,
                                             map.transform_ * tf_utils::get_map_origin_tf(map.map.info).inverse());
 
-        std::cout << "individual transform : " << cv_transform << std::endl;
-
         cv_core::image_transform(cv_core::CVImage(cv_map), transformed_map, cv_transform);
         cv_maps.emplace_back(transformed_map);
     }
 
     // Create merged canvas
     cv_core::CVImage merged_image = merge_map_images(cv_maps);
+
+    // Currently supports same resolution maps only.
+    /* TODO support multiresolution maps */
+    publish_map(merged_image, maps.front().map.info.resolution);
 
     // // tf printer
     // tf2::Transform mytf = transform;
@@ -192,4 +198,18 @@ cv_core::CVImage SubMapMerger::merge_map_images(std::vector<cv_core::CVImage> im
     cv::waitKey(500);
 
     return merged_image;
+}
+
+void SubMapMerger::publish_map(cv_core::CVImage map, double resolution)
+{
+    nav_msgs::msg::OccupancyGrid map_msg;
+    map_msg.header.frame_id = world_frame_;
+    map_msg.header.stamp = node_->get_clock()->now();
+    map_msg.info.height = map.image.rows;
+    map_msg.info.width = map.image.cols;
+    map_msg.info.resolution = resolution;
+    map_msg.info.origin.position.x = map.origin.x * resolution;
+    map_msg.info.origin.position.y = map.origin.y * resolution;
+    map_msg.data.assign(map.image.begin<int8_t>(), map.image.end<int8_t>());
+    map_publisher_->publish(map_msg);
 }
