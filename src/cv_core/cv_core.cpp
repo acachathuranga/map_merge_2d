@@ -99,7 +99,8 @@ void cv_core::image_transform(const CVImage src, CVImage &dest, cv::Mat transfor
   cv::warpAffine(src.image, dest.image, adjusted_transform, dsize, cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255)); // 255: White border
 } 
 
-std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence)
+std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence,
+                                                    std::map<int, double> &estimation_confidences)
 {
   std::vector<cv::detail::ImageFeatures> image_features;
   std::vector<cv::detail::MatchesInfo> pairwise_matches;
@@ -151,11 +152,27 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   }
 
   // TODO Fix? Bundle adjustment results in incorrect transformations for test images. Hence removed
-  // adjuster->setConfThresh(confidence);
-  // if (!(*adjuster)(image_features, pairwise_matches, transforms)) {
-  //   std::cout << "Bundle adjusting failed. Could not estimate transforms." << std::endl;
-  //   return;
-  // }
+  adjuster->setConfThresh(confidence);
+  if (!(*adjuster)(image_features, pairwise_matches, transforms)) {
+    std::cout << "Bundle adjusting failed. Could not estimate transforms." << std::endl;
+    return image_transforms;
+  }
+
+  // Get confidence map
+  std::map<int, double> confidence_score;
+  std::map<int, int> match_count;
+  for (auto& match_info : pairwise_matches)
+  {
+    confidence_score[match_info.src_img_idx] += match_info.confidence;
+    confidence_score[match_info.dst_img_idx] += match_info.confidence;
+    match_count[match_info.src_img_idx]++;
+    match_count[match_info.dst_img_idx]++;
+  }
+  // Normalize confidence scores
+  for (auto &match: confidence_score)
+  {
+    match.second = match.second / match_count.at(match.first);
+  }
 
   // If valid matches are found, indice could will be > 2
   if (good_indices.size() > 1)
@@ -164,6 +181,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
     {
       // insert estimated transforms into image_transforms, selecting 2D affine matrix only [2d rot, 2d trans]
       image_transforms.insert({good_indices.at(i), transforms.at(i).R(cv::Range(0,2), cv::Range(0,3))});
+      estimation_confidences[good_indices.at(i)] = confidence_score[good_indices.at(i)];
     }
   }
 

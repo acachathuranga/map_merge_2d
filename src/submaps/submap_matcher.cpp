@@ -86,9 +86,11 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
     }
 
     /* Estimate map transforms */
+    std::map<int, double> transform_confidence;
     std::map<int, cv::Mat> relative_transforms = cv_core::estimateTransforms(cv_maps, 
                                                         cv_core::FeatureType::AKAZE, 
-                                                        options_.confidence);
+                                                        options_.confidence,
+                                                        transform_confidence);
 
     // TODO : Add transform validity check using existing transfrom? Filter? 
     // (Sudden large deviations in transforms should indicate some error)
@@ -96,12 +98,8 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
     /* Check if sufficient matches available. Else abort */
     if (relative_transforms.size() < 2)
     {
-        RCLCPP_WARN_STREAM(logger_, "Failed to create sufficient matches. Try reducing confidence score?");
+        RCLCPP_DEBUG_STREAM(logger_, "Failed to create sufficient matches. Try reducing confidence score?");
         return;
-    }
-    else
-    {
-        RCLCPP_ERROR_STREAM(logger_, "Found new matches");
     }
 
     /* Publish warning for unmatched maps */
@@ -113,7 +111,7 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
             if (!relative_transforms.count(i))
                 unmatched_maps_msg += maps.at(i).name_ + " ";
         }
-        RCLCPP_WARN_STREAM(logger_, unmatched_maps_msg);
+        RCLCPP_DEBUG_STREAM(logger_, unmatched_maps_msg);
     } 
 
     /* Check if any map has known tf. If not initialize a map with identity transform */
@@ -160,7 +158,14 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
                                                 tf_utils::get_map_origin_tf(
                                                     maps.at(relative_transform.first).map.info);
 
-            submaps.at(relative_transform.first)->update_transform(submap_transform);
+            if (transform_confidence.at(relative_transform.first) > maps.at(relative_transform.first).transform_confidence_)
+            {
+                RCLCPP_INFO_STREAM(logger_, "Map " << maps.at(relative_transform.first).name_ << "transform updated.\n " <<
+                                                        "confidence: " << transform_confidence.at(relative_transform.first) <<
+                                                        "\ntransform: " << relative_transform.second);
+                submaps.at(relative_transform.first)->update_transform(submap_transform, 
+                                                                        transform_confidence.at(relative_transform.first));
+            }
         }
     }
     else

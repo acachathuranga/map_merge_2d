@@ -61,6 +61,7 @@ SubMap::Map SubMap::get_map(void)
     map.map = map_;
     map.known_pose = known_pose_;
     map.transform_ = transform_;
+    map.transform_confidence_ = transform_confidence_;
     map.name_ = name;
     
     return map;
@@ -70,6 +71,16 @@ void SubMap::update_transform(tf2::Transform transform)
 {
     std::unique_lock lock(mutex_);
     transform_ = transform;
+
+    // Set to known_pose configuration once map transform is initialized
+    known_pose_ = true;
+}
+
+void SubMap::update_transform(tf2::Transform transform, double confidence)
+{
+    std::unique_lock lock(mutex_);
+    transform_ = transform;
+    transform_confidence_ = confidence;
 
     // Set to known_pose configuration once map transform is initialized
     known_pose_ = true;

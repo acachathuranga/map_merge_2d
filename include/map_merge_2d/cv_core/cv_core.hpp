@@ -91,7 +91,8 @@ namespace map_merge_2d
         cv::Ptr<cv::Feature2D> chooseFeatureFinder(FeatureType type);
 
         void image_transform(const CVImage src, CVImage &dest, cv::Mat transform);
-        std::map<int, cv::Mat> estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence);
+        std::map<int, cv::Mat> estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence,
+                                                    std::map<int, double> &estimation_confidences);
 
         
     } // namespace cv_core

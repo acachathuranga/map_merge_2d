@@ -21,6 +21,7 @@ namespace map_merge_2d
                 nav_msgs::msg::OccupancyGrid map;
                 bool known_pose;
                 tf2::Transform transform_;
+                double transform_confidence_;
                 std::string name_;
             };
 
@@ -28,6 +29,7 @@ namespace map_merge_2d
 
             Map get_map(void);
             void update_transform(tf2::Transform transform);
+            void update_transform(tf2::Transform transform, double confidence);
 
             std::atomic<bool> available;
             const std::string name;
@@ -37,6 +39,7 @@ namespace map_merge_2d
 
             bool known_pose_;
             tf2::Transform transform_;
+            double transform_confidence_ = -1;
             rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr subscriber_;
             mutable std::shared_mutex mutex_;
             nav_msgs::msg::OccupancyGrid map_;
