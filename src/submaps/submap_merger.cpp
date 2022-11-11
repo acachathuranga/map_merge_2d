@@ -156,27 +156,20 @@ cv_core::CVImage SubMapMerger::merge_map_images(std::vector<cv_core::CVImage> im
     
     /* Merge all images into one canvas */
     cv_core::CVImage merged_image(cv::Mat(dsize.height, dsize.width, CV_8UC1, 255), min_x, min_y);
+    cv::Mat merged_map_obstacles = merged_image.image.clone();
+    merged_map_obstacles.setTo(0, merged_image.image > 100); // Clear unknown area
     for (auto &image : transformed_images)
     {
-        // Test purpose only
-        cv::Mat clone_image = image.clone();
-        clone_image.setTo(254, image == 0);
-        /////////
-
         /**
          * @brief Copy obstacles into merged image (accumulated)
          * 
          * Select obstacle pixels from merged map and submap
          * Add pixel probabilities and clamp to 100
          */
-        cv::Mat merged_map_obstacles = merged_image.image.clone();
-        merged_map_obstacles.setTo(0, merged_image.image > 100); // Clear unknown area
         cv::Mat sub_map_obstacles = image.clone();
         sub_map_obstacles.setTo(0, image > 100); // Clear unknown area
         merged_map_obstacles += sub_map_obstacles;
         merged_map_obstacles.setTo(100, merged_map_obstacles > 100); // Clamp probabilities to 100
-        merged_map_obstacles.copyTo(merged_image.image, merged_map_obstacles > 0); // Copy obstacle values to merged map
-
         /**
          * @brief Copy known free area to merged map
          * 
@@ -186,11 +179,23 @@ cv_core::CVImage SubMapMerger::merge_map_images(std::vector<cv_core::CVImage> im
          * Then mark merged map pixel as known-free.
          * (If any submap marks this pixel as occupied, that will take precidence)
          */
-        merged_image.image.setTo(0, merged_image.image == 255 & image == 0);
+        merged_image.image.setTo(0,  image == 0); //merged_image.image == 255 &
+    }
+    merged_map_obstacles.copyTo(merged_image.image, merged_map_obstacles > 0); // Copy obstacle values to merged map
+
+    for (auto &image : transformed_images)
+    {
+        /**
+         * @brief Copy  all known free areas to merged map
+         * 
+         * if corresponding pixel in a sub map is known-free -> 0
+         * Then mark merged map pixel as known-free.
+         */
+        merged_image.image.setTo(0,  image == 0); //merged_image.image == 255 &
     }
 
     cv::Mat scaled_image;
-    cv::Size scale(dsize.width * 2, dsize.height * 2);
+    cv::Size scale(dsize.width * 3, dsize.height * 3);
     resize(merged_image.image, scaled_image, scale, cv::INTER_LINEAR);
     scaled_image = (255 - scaled_image); // Inverting colors for visualization
     scaled_image.setTo(150, scaled_image == 0); // Changing unknown area color
