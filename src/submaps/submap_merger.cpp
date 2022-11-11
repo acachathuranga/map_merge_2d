@@ -197,16 +197,16 @@ cv_core::CVImage SubMapMerger::merge_map_images(std::vector<cv_core::CVImage> im
          * if corresponding pixel in a sub map is known-free -> 0
          * Then mark merged map pixel as known-free.
          */
-        merged_image.image.setTo(0,  image == 0); //merged_image.image == 255 &
+        merged_image.image.setTo(0,  image == 0); 
     }
 
-    cv::Mat scaled_image;
-    cv::Size scale(dsize.width * 3, dsize.height * 3);
-    resize(merged_image.image, scaled_image, scale, cv::INTER_LINEAR);
-    scaled_image = (255 - scaled_image); // Inverting colors for visualization
-    scaled_image.setTo(150, scaled_image == 0); // Changing unknown area color
-    cv::imshow("merged", scaled_image);
-    cv::waitKey(500);
+    // cv::Mat scaled_image;
+    // cv::Size scale(dsize.width * 3, dsize.height * 3);
+    // resize(merged_image.image, scaled_image, scale, cv::INTER_LINEAR);
+    // scaled_image = (255 - scaled_image); // Inverting colors for visualization
+    // scaled_image.setTo(150, scaled_image == 0); // Changing unknown area color
+    // cv::imshow("merged", scaled_image);
+    // cv::waitKey(500);
 
     return merged_image;
 }

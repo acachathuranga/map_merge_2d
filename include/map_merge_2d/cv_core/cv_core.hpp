@@ -44,7 +44,7 @@
 #include <opencv2/opencv.hpp>
 #include <map_merge_2d/cv_core/cv_helpers.hpp>
 
-// #define NDEBUG
+#define NDEBUG
 
 namespace map_merge_2d
 {
