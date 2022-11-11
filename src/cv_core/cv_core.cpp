@@ -96,7 +96,7 @@ void cv_core::image_transform(const CVImage src, CVImage &dest, cv::Mat transfor
 
   // Transform image
   cv::Size dsize(max_x - min_x, max_y - min_y);
-  cv::warpAffine(src.image, dest.image, adjusted_transform, dsize, cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255)); // 255: White border
+  cv::warpAffine(src.image, dest.image, adjusted_transform, dsize, cv::INTER_NEAREST, cv::BORDER_CONSTANT, cv::Scalar(255)); // 255: White border
 } 
 
 std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence,
