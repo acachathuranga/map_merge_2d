@@ -27,6 +27,7 @@ namespace map_merge_2d
         private:
             void topic_discovery_callback(std::string topic_name);
             std::vector<std::shared_ptr<SubMap>> get_submaps();
+            void publish_tf(void);
 
             std::shared_ptr<TopicDiscovery> map_discovery_;
             std::shared_ptr<SubMapMatcher> map_matcher_;

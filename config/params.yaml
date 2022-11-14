@@ -5,7 +5,7 @@ $(var namespace)/map_merge:
     map_namespace: ssugv
 
     matching_rate: 0.3
-    matching_confidence: 0.5
+    matching_confidence: 0.7
 
     merging_rate: 0.6
     publish_merged_map: true

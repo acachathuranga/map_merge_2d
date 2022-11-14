@@ -30,13 +30,18 @@ SubMapMerger::SubMapMerger(rclcpp::Node *node, std::function<std::vector<std::sh
     // Declare parameters
     node_->declare_parameter("merging_rate", 0.3);
     node_->declare_parameter("publish_merged_map", true);
+    node_->declare_parameter("publish_tf", true);
     node_->declare_parameter("world_frame", "world");
 
     // Get Parameters
     double merging_rate = node_->get_parameter("merging_rate").as_double();
     publish_merged_map_ = node_->get_parameter("publish_merged_map").as_bool();
+    publish_tf = node_->get_parameter("publish_tf").as_bool();
     std::string merged_map_topic = node_->get_parameter("merged_map_topic").as_string();
     world_frame_ = node_->get_parameter("world_frame").as_string();
+
+    // Create tf broadcaster
+    tf_broadcaster_ =  std::make_shared<tf2_ros::TransformBroadcaster>(node_);
 
     // Create publisher
     map_publisher_ = node->create_publisher<nav_msgs::msg::OccupancyGrid>(merged_map_topic, 10);
@@ -110,9 +115,19 @@ bool SubMapMerger::merge(std::vector<std::shared_ptr<SubMap>> submaps, nav_msgs:
     // Create merged canvas
     cv_core::CVImage merged_image = merge_map_images(cv_maps);
 
+    // Publish tf
+    if (publish_tf)
+    {
+        publish_map_transforms(maps);
+    }
+
     // Currently supports same resolution maps only.
     /* TODO support multiresolution maps */
-    publish_map(merged_image, maps.front().map.info.resolution);
+    if (publish_merged_map_)
+    {
+        publish_map(merged_image, maps.front().map.info.resolution);
+    }
+    
 
     // // tf printer
     // tf2::Transform mytf = transform;
@@ -223,4 +238,28 @@ void SubMapMerger::publish_map(cv_core::CVImage map, double resolution)
     map_msg.info.origin.position.y = map.origin.y * resolution;
     map_msg.data.assign(map.image.begin<int8_t>(), map.image.end<int8_t>());
     map_publisher_->publish(map_msg);
+}
+
+void SubMapMerger::publish_map_transforms(std::vector<SubMap::Map> maps)
+{
+    for (auto &map : maps)
+    {
+        geometry_msgs::msg::TransformStamped transform;
+        transform.header.frame_id = world_frame_;
+        transform.header.stamp = node_->get_clock()->now();
+        transform.child_frame_id = map.name_;
+
+        tf2::Vector3 origin = map.transform_.getOrigin();
+        tf2::Quaternion rotation = map.transform_.getRotation();
+        transform.transform.translation.x = origin.getX();
+        transform.transform.translation.y = origin.getY();
+        transform.transform.translation.z = origin.getZ();
+
+        transform.transform.rotation.x = rotation.getX();
+        transform.transform.rotation.y = rotation.getY();
+        transform.transform.rotation.z = rotation.getZ();
+        transform.transform.rotation.w = rotation.getW();
+
+        tf_broadcaster_->sendTransform(transform);
+    }
 }
