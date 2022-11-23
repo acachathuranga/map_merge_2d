@@ -3,11 +3,13 @@
 using namespace map_merge_2d;
 
 SubMap::SubMap(rclcpp::Node *node, std::string map_topic) 
-:   known_pose_(false),
-    name(ros_names::parentNamespace(map_topic))
+:   name(ros_names::parentNamespace(map_topic)),
+    logger_(rclcpp::get_logger("SubMap")),
+    known_pose_(false)
 {
     if (node == nullptr)
     {
+        logger_ = node->get_logger();
         RCLCPP_ERROR_STREAM(rclcpp::get_logger("SubMap"), "Invalid node[null] passed to submap creation. Topic: " << map_topic);
         throw std::invalid_argument("Null pointer passed as node to SubMap");
     }
@@ -73,6 +75,10 @@ void SubMap::update_transform(tf2::Transform transform)
     transform_ = transform;
 
     // Set to known_pose configuration once map transform is initialized
+    if(!known_pose_)
+    {
+        RCLCPP_DEBUG(logger_, "%s map transformation established!", name.c_str());
+    }
     known_pose_ = true;
 }
 
@@ -83,6 +89,10 @@ void SubMap::update_transform(tf2::Transform transform, double confidence)
     transform_confidence_ = confidence;
 
     // Set to known_pose configuration once map transform is initialized
+    if(!known_pose_)
+    {
+        RCLCPP_DEBUG(logger_, "%s map transformation established!", name.c_str());
+    }
     known_pose_ = true;
 }
 
