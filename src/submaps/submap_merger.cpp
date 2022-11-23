@@ -53,11 +53,10 @@ SubMapMerger::SubMapMerger(rclcpp::Node *node, std::function<std::vector<std::sh
 
 void SubMapMerger::merge(void)
 {
-    nav_msgs::msg::OccupancyGrid map;
-    merge(submap_reader_(), map);
+    merge(submap_reader_());
 }
 
-bool SubMapMerger::merge(std::vector<std::shared_ptr<SubMap>> submaps, nav_msgs::msg::OccupancyGrid merged_map)
+bool SubMapMerger::merge(std::vector<std::shared_ptr<SubMap>> submaps)
 {   
     
     // Submap vector should at least have one map
@@ -139,6 +138,7 @@ bool SubMapMerger::merge(std::vector<std::shared_ptr<SubMap>> submaps, nav_msgs:
 
     // std::cout << "[" << mytrans[0] << "," << mytrans[1] << "," << mytrans[2] << "]" << std::endl;
     // std::cout << cv_transform << std::endl;
+    return true;
 }
 
 cv_core::CVImage SubMapMerger::merge_map_images(std::vector<cv_core::CVImage> images)
