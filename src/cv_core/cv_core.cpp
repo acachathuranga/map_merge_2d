@@ -105,6 +105,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   std::vector<cv::detail::ImageFeatures> image_features;
   std::vector<cv::detail::MatchesInfo> pairwise_matches;
   std::vector<cv::detail::CameraParams> transforms;
+  std::vector<uint> feature_available_image_indices;
   std::vector<int> good_indices;
   std::map<int, cv::Mat> image_transforms;
 
@@ -120,12 +121,35 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   }
 
   /* find features in images */
-  image_features.reserve(images.size());
+  std::vector<cv::detail::ImageFeatures> features;
+  int image_index = 0;
   for (const cv::Mat& image : images) {
-    image_features.emplace_back();
+    features.emplace_back();
     if (!image.empty()) {
-      cv::detail::computeImageFeatures(finder, image, image_features.back());
+      cv::detail::computeImageFeatures(finder, image, features.back());
+      if (features.back().keypoints.size() >= 2)
+      {
+        // Record index of feature available image, for matching
+        feature_available_image_indices.emplace_back(image_index);
+      }
+      else
+      {
+        std::cout << "No features in image" + std::to_string(image_index) << std::endl;
+      }
     }
+    image_index++;
+    }
+  /* Filter images without features */
+  if (feature_available_image_indices.size() < 2)
+  {
+    // No pairs to match
+    return image_transforms;
+  }
+  image_features.reserve(feature_available_image_indices.size());
+  for (uint i = 0; i < feature_available_image_indices.size(); i++)
+  {
+    image_features.emplace_back();
+    image_features.at(i) = features.at(feature_available_image_indices.at(i));
   }
   
   /* find corespondent features */
@@ -180,7 +204,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
     for (uint i = 0; i < good_indices.size(); i++)
     {
       // insert estimated transforms into image_transforms, selecting 2D affine matrix only [2d rot, 2d trans]
-      image_transforms.insert({good_indices.at(i), transforms.at(i).R(cv::Range(0,2), cv::Range(0,3))});
+      image_transforms.insert({feature_available_image_indices.at(good_indices.at(i)), transforms.at(i).R(cv::Range(0,2), cv::Range(0,3))});
       estimation_confidences[good_indices.at(i)] = confidence_score[good_indices.at(i)];
     }
   }
