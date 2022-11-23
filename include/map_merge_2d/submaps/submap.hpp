@@ -37,6 +37,7 @@ namespace map_merge_2d
         private:
             void update_map(nav_msgs::msg::OccupancyGrid msg);
 
+            rclcpp::Logger logger_;
             bool known_pose_;
             tf2::Transform transform_;
             double transform_confidence_ = -1;
