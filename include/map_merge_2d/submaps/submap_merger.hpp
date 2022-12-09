@@ -20,7 +20,7 @@ namespace map_merge_2d
             SubMapMerger(rclcpp::Node *node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader);
 
             void merge(void);
-            bool merge(std::vector<std::shared_ptr<SubMap>> submaps, nav_msgs::msg::OccupancyGrid merged_map);
+            bool merge(std::vector<std::shared_ptr<SubMap>> submaps);
         
         private:
             cv_core::CVImage merge_map_images(std::vector<cv_core::CVImage> images);
