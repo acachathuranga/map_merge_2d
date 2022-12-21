@@ -3,7 +3,8 @@
 using namespace map_merge_2d;
 
 SubMap::SubMap(rclcpp::Node *node, std::string map_topic) 
-:   name(ros_names::parentNamespace(map_topic)),
+:   available(false),
+    name(ros_names::parentNamespace(map_topic)),
     logger_(rclcpp::get_logger("SubMap")),
     known_pose_(false)
 {
