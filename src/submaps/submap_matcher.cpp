@@ -69,6 +69,7 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
 
     // Convert OccupancyGrids to CV Mat
     std::vector<cv::Mat> cv_maps;
+    cv_maps.reserve(submaps.size());
     for (auto &map : maps)
     {
         cv_maps.emplace_back(map.map.info.height, 
@@ -96,6 +97,7 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
         /* For feature mapping, we do not consider 'known free' area. Only obstacles */
         cv_maps.back().setTo(255, cv_maps.back() == 0);
     }
+    cv_maps.shrink_to_fit();
 
     /* Estimate map transforms */
     std::map<int, double> transform_confidence;
