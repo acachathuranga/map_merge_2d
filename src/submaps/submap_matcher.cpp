@@ -158,8 +158,8 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
                                         maps.at(anchor_maps.front()).map.info).inverse() *
                                     tf_utils::cv_transform_to_tf2(
                                         maps.at(anchor_maps.front()).map.info.resolution,
-                                        relative_transforms.at(anchor_maps.front())).inverse();
-                                        
+                                        relative_transforms.at(anchor_maps.front()));
+
         // Remove anchor map from relative transform list
         relative_transforms.erase(anchor_maps.front());
 
