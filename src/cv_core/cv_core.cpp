@@ -156,6 +156,27 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   /* find corespondent features */
   (*matcher)(image_features, pairwise_matches);
 
+  for (int idx = 0; idx < pairwise_matches.size(); idx++)
+  {
+    // Creating match index histogram
+    int source_image_id = pairwise_matches.at(idx).src_img_idx;
+    int dest_image_id = pairwise_matches.at(idx).dst_img_idx;
+
+    std::map<int, int> query_indexes;
+    std::map<int, int> train_indexes;
+
+    for (auto &match : pairwise_matches.at(idx).matches)
+    {
+      if ( (++query_indexes[match.queryIdx] > 10) || (++train_indexes[match.trainIdx] > 10) )
+      {
+        std::cout << source_image_id << " to " << dest_image_id <<  " match divergence!! " << std::endl;
+        pairwise_matches.erase(pairwise_matches.begin() + idx);
+        break;
+      }
+    }
+    
+  }
+
   #ifndef NDEBUG
     cv_core_helper::writeDebugMatchingInfo(images, image_features, pairwise_matches);
   #endif
