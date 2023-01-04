@@ -156,7 +156,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   /* find corespondent features */
   (*matcher)(image_features, pairwise_matches);
 
-  for (int idx = 0; idx < pairwise_matches.size(); idx++)
+  for (long unsigned int idx = 0; idx < pairwise_matches.size(); idx++)
   {
     // Creating match index histogram
     int source_image_id = pairwise_matches.at(idx).src_img_idx;
