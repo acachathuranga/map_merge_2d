@@ -43,7 +43,7 @@ cv::Ptr<cv::Feature2D> cv_core::chooseFeatureFinder(FeatureType type)
 {
   switch (type) {
     case FeatureType::AKAZE:
-      return cv::AKAZE::create(cv::AKAZE::DESCRIPTOR_KAZE_UPRIGHT, 0, 1, 0.001, 4, 4, cv::KAZE::DIFF_PM_G2);
+      return cv::AKAZE::create(); //cv::AKAZE::DESCRIPTOR_KAZE_UPRIGHT, 0, 1, 0.001, 4, 4, cv::KAZE::DIFF_PM_G2
     case FeatureType::ORB:
       return cv::ORB::create();
     case FeatureType::SURF:
