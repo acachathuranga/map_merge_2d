@@ -109,7 +109,7 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
     /* Check if sufficient matches available. Else abort */
     if (relative_transforms.size() < 2)
     {
-        RCLCPP_DEBUG_STREAM(logger_, "Failed to create sufficient matches. Try reducing confidence score?");
+        RCLCPP_INFO_STREAM_THROTTLE(logger_, *node_->get_clock(), 10000, "Failed to create sufficient matches. Try reducing confidence score?");
         return;
     }
 
