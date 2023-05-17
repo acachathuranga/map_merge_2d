@@ -2,7 +2,7 @@
 
 using namespace map_merge_2d;
 
-MapMerger::MapMerger() : Node("map_merge_2d"), count_(0)
+MapMerger::MapMerger() : Node("map_merge_2d")
 {
   // Declare parameters
   this->declare_parameter("discovery_rate", 0.5);
@@ -23,10 +23,12 @@ MapMerger::MapMerger() : Node("map_merge_2d"), count_(0)
   map_discovery_ = std::make_shared<TopicDiscovery>(this, info, 
                             std::bind(&MapMerger::topic_discovery_callback, this, std::placeholders::_1));
 
+  // start map matcher
+  map_matcher_ = std::make_shared<SubMapMatcher>(this, std::bind(&MapMerger::get_submaps, this));
   
-  //////////////// TODO Delete
-  publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
-  // timer_ = this->create_wall_timer(std::chrono::seconds(1), std::bind(&MapMerger::timer_callback, this));
+  // start map merger
+  map_merger_ = std::make_shared<SubMapMerger>(this, std::bind(&MapMerger::get_submaps, this));
+
 }
 
 void MapMerger::topic_discovery_callback(std::string topic_name)
@@ -35,10 +37,17 @@ void MapMerger::topic_discovery_callback(std::string topic_name)
   submaps_.emplace_back(std::make_shared<SubMap>(this, topic_name));
 }
 
-void MapMerger::timer_callback()
+std::vector<std::shared_ptr<SubMap>> MapMerger::get_submaps()
 {
-  auto message = std_msgs::msg::String();
-  message.data = "Hello, world! " + std::to_string(count_++);
-  RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-  publisher_->publish(message);
+  std::shared_lock lock(submap_mutex_);
+
+  // Return only valid maps (received maps)
+  std::vector<std::shared_ptr<SubMap>> submaps;
+  for (auto &submap : submaps_)
+  {
+    if(submap->available)
+      submaps.emplace_back(submap);
+  }
+
+  return submaps;
 }

@@ -20,8 +20,8 @@ def generate_launch_description():
     namespace = LaunchConfiguration('namespace')
     
     # Topic remappings
-    # remappings = [('/map', 'map'), 
-    #                 ('/tf', 'tf')]
+    remappings = [('/tf_static', 'tf_static'), 
+                    ('/tf', 'tf')]
 
     # Declare launch actions
     start_map_merger = Node(
@@ -30,10 +30,20 @@ def generate_launch_description():
         name='map_merge',
         namespace=namespace,
         output='screen',
-        # remappings=remappings,
+        remappings=remappings,
         parameters=[
-          ParameterFile(os.path.join(pkg_dir, 'config', 'params.yaml'), allow_substs=True),
-        ])
+          ParameterFile(os.path.join(pkg_dir, 'config', 'params.yaml'), allow_substs=True)],
+        # prefix=['xterm -e gdb -ex run --args'],
+        # arguments=['--ros-args', '--log-level', 'debug'],
+        emulate_tty=True)
+    
+    start_hostmap_static_tf_publisher = Node(
+        package = "tf2_ros", 
+        executable = "static_transform_publisher",
+        name = "hostmap_tf_publisher",
+        namespace=namespace,
+        remappings=remappings,
+        arguments = ["0", "0", "0", "0", "0", "0", namespace, "map"])
  
     # Create Launch description
     ld = LaunchDescription()
@@ -41,4 +51,5 @@ def generate_launch_description():
     ld.add_action(declare_arg_namespace)
 
     ld.add_action(start_map_merger)
+    ld.add_action(start_hostmap_static_tf_publisher)
     return ld

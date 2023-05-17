@@ -1,21 +1,23 @@
 $(var namespace)/map_merge:
   ros__parameters:
+    # Map Topic discovery
     discovery_rate: 0.5
     map_topic: map
     map_namespace: ssugv
+
+    # Map matching
+    matching_rate: 0.3
+    matching_confidence: 0.7
+
+    # Map merging
+    merging_rate: 0.6
+    publish_merged_map: true
+    publish_tf: true
     merged_map_topic: merged_map
+    world_frame: world
 
-    ssugv1/init_pose_x: 0.0
-    ssugv1/init_pose_y: 0.0
-    ssugv1/init_pose_z: 0.0
-    ssugv1/init_pose_yaw: 0.0
-
-    ssugv2/init_pose_x: 0.0
-    ssugv2/init_pose_y: 0.0
-    ssugv2/init_pose_z: 0.0
-    ssugv2/init_pose_yaw: 0.0
-
-    ssugv3/init_pose_x: 0.0
-    ssugv3/init_pose_y: 0.0
-    ssugv3/init_pose_z: 0.0
-    ssugv3/init_pose_yaw: 0.0
+    # Setting own map to world zero position
+    $(var namespace)/init_pose_x: 0.0
+    $(var namespace)/init_pose_y: 0.0
+    $(var namespace)/init_pose_z: 0.0
+    $(var namespace)/init_pose_yaw: 0.0
