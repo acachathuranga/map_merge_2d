@@ -69,4 +69,9 @@ The following settings and options are exposed to you. My default configuration 
 
 `<robot_ns>/init_pose_yaw` - Initial yaw of a robot
 
+## Debugging
+
+To debug or tune the performance of map merger, you can enable map feature matches visualization. To do this, comment the `#define NDEBUG` line in `include/map_merge_2d/cv_core/cv_core.hpp [line 47]` file and recompile the package.
+
+![results](/doc/feature_matches.png?raw=true "Detected & Matched features between two local maps")
 
