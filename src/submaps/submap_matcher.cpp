@@ -33,7 +33,7 @@ SubMapMatcher::SubMapMatcher(MatcherOptions options)
     options_ = options;
 }
 
-SubMapMatcher::SubMapMatcher(ros::NodeHandle *node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader)
+SubMapMatcher::SubMapMatcher(std::shared_ptr<ros::NodeHandle> node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader)
 {
     if (node == nullptr)
     {
@@ -53,8 +53,8 @@ SubMapMatcher::SubMapMatcher(ros::NodeHandle *node, std::function<std::vector<st
     double matching_rate;
 
     // Get Parameters
-    ros::param::param<double>("matching_rate", matching_rate, 0.3);
-    ros::param::param<double>("matching_confidence", options_.confidence, 0.5);
+    node_->param<double>("matching_rate", matching_rate, 0.3);
+    node_->param<double>("matching_confidence", options_.confidence, 0.5);
 
     // Create timers
     matcher_timer_ = node_->createTimer(ros::Duration(1.0/matching_rate),

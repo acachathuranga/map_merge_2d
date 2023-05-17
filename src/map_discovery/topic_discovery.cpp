@@ -35,7 +35,7 @@ using namespace map_merge_2d;
  * @param info
  * @param callback discovered callback(topic_full_name, topic_namespace)
  */
-TopicDiscovery::TopicDiscovery(ros::NodeHandle *node, TopicInfo info, std::function<void (std::string)> callback)
+TopicDiscovery::TopicDiscovery(std::shared_ptr<ros::NodeHandle> node, TopicInfo info, std::function<void (std::string)> callback)
 {
     if (node == nullptr)
     {

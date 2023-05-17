@@ -43,7 +43,7 @@ namespace map_merge_2d
     {
         public:
             SubMapMerger();
-            SubMapMerger(ros::NodeHandle *node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader);
+            SubMapMerger(std::shared_ptr<ros::NodeHandle> node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader);
 
             void merge(void);
             bool merge(std::vector<std::shared_ptr<SubMap>> submaps);
@@ -53,7 +53,7 @@ namespace map_merge_2d
             void publish_map(cv_core::CVImage map, double resolution);
             void publish_map_transforms(std::vector<SubMap::Map> maps);
 
-            ros::NodeHandle *node_;
+            std::shared_ptr<ros::NodeHandle> node_;
             tf2_ros::TransformBroadcaster tf_broadcaster_;
             ros::Publisher map_publisher_;
             std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader_;

@@ -58,7 +58,7 @@ namespace map_merge_2d
             std::shared_ptr<TopicDiscovery> map_discovery_;
             std::shared_ptr<SubMapMatcher> map_matcher_;
             std::shared_ptr<SubMapMerger> map_merger_;
-            ros::NodeHandle node_;
+            std::shared_ptr<ros::NodeHandle> node_;
 
             // Protected variables - to be accessed with thread safety only
             std::vector<std::shared_ptr<SubMap>> submaps_;

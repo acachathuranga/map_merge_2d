@@ -49,7 +49,7 @@ namespace map_merge_2d
             };
 
             SubMapMatcher(MatcherOptions options);
-            SubMapMatcher(ros::NodeHandle *node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader);
+            SubMapMatcher(std::shared_ptr<ros::NodeHandle> node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader);
 
             void match(std::vector<std::shared_ptr<SubMap>> submaps);
             void match(void);
@@ -58,7 +58,7 @@ namespace map_merge_2d
             bool has_known_tf(std::vector<SubMap::Map> maps);
             bool has_known_tf(std::vector<SubMap::Map> maps, std::map<int, cv::Mat> estimates, std::vector<int> &idx);
 
-            ros::NodeHandle *node_;
+            std::shared_ptr<ros::NodeHandle> node_;
             MatcherOptions options_;
             ros::Timer matcher_timer_;
             std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader_;

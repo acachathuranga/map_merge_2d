@@ -30,35 +30,36 @@ using namespace map_merge_2d;
 
 MapMerger::MapMerger()
 {
+  node_ = std::make_shared<ros::NodeHandle>("~");
+
   TopicDiscovery::TopicInfo info;
   std::string merged_map_topic;
 
   // Get parameters
-  ros::param::param<double>("discovery_rate", info.discovery_rate, 0.5);
-  ros::param::param<std::string>("map_topic", info.topic_name, "map");
-  ros::param::param<std::string>("map_namespace", info.topic_namespace, "");
-  ros::param::param<std::string>("merged_map_topic", merged_map_topic, "merged_map");
-
+  node_->param<double>("discovery_rate", info.discovery_rate, 0.5);
+  node_->param<std::string>("map_topic", info.topic_name, "map");
+  node_->param<std::string>("map_namespace", info.topic_namespace, "");
+  node_->param<std::string>("merged_map_topic", merged_map_topic, "merged_map");
 
   info.exclusions.emplace_back(ros_names::append(ros::this_node::getName(), merged_map_topic));
   info.topic_type = "nav_msgs/msg/OccupancyGrid";
 
   // start topic discovery
-  map_discovery_ = std::make_shared<TopicDiscovery>(&node_, info, 
+  map_discovery_ = std::make_shared<TopicDiscovery>(node_, info, 
                             std::bind(&MapMerger::topic_discovery_callback, this, std::placeholders::_1));
 
   // start map matcher
-  map_matcher_ = std::make_shared<SubMapMatcher>(&node_, std::bind(&MapMerger::get_submaps, this));
+  map_matcher_ = std::make_shared<SubMapMatcher>(node_, std::bind(&MapMerger::get_submaps, this));
   
   // start map merger
-  map_merger_ = std::make_shared<SubMapMerger>(&node_, std::bind(&MapMerger::get_submaps, this));
+  map_merger_ = std::make_shared<SubMapMerger>(node_, std::bind(&MapMerger::get_submaps, this));
 
 }
 
 void MapMerger::topic_discovery_callback(std::string topic_name)
 {
   std::unique_lock<std::mutex> lock(submap_mutex_);
-  submaps_.emplace_back(std::make_shared<SubMap>(&node_, topic_name));
+  submaps_.emplace_back(std::make_shared<SubMap>(node_, topic_name));
 }
 
 std::vector<std::shared_ptr<SubMap>> MapMerger::get_submaps()

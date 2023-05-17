@@ -52,7 +52,7 @@ namespace map_merge_2d
                 std::string name_;
             };
 
-            SubMap(ros::NodeHandle *node, std::string map_topic);
+            SubMap(std::shared_ptr<ros::NodeHandle> node, std::string map_topic);
 
             Map get_map(void);
             void update_transform(tf2::Transform transform);

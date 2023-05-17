@@ -51,18 +51,18 @@ namespace map_merge_2d
             {
                 std::string topic_name;
                 std::string topic_namespace;
-                std::string topic_type = "nav_msgs/msg/OccupancyGrid";
+                std::string topic_type = "nav_msgs/OccupancyGrid";
                 std::vector<std::string> exclusions;
                 double discovery_rate = 1.0;
             };
 
-            TopicDiscovery(ros::NodeHandle *node, TopicInfo info, std::function<void (std::string)> callback);
+            TopicDiscovery(std::shared_ptr<ros::NodeHandle> node, TopicInfo info, std::function<void (std::string)> callback);
 
         private:
             void discovery_callback();
             std::vector<std::string> get_topic_matches();
 
-            ros::NodeHandle *node_;
+            std::shared_ptr<ros::NodeHandle> node_;
             TopicInfo info_;
             ros::Timer discover_timer_;
             std::function<void (std::string)> callback_;

@@ -33,7 +33,7 @@ SubMapMerger::SubMapMerger()
 
 }
 
-SubMapMerger::SubMapMerger(ros::NodeHandle *node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader)
+SubMapMerger::SubMapMerger(std::shared_ptr<ros::NodeHandle> node, std::function<std::vector<std::shared_ptr<SubMap>> ()> submap_reader)
 {
     if (node == nullptr)
     {
@@ -54,11 +54,11 @@ SubMapMerger::SubMapMerger(ros::NodeHandle *node, std::function<std::vector<std:
     std::string merged_map_topic;
 
     // Get Parameters
-    ros::param::param<double>("merging_rate", merging_rate, 0.3);
-    ros::param::param<bool>("publish_merged_map", publish_merged_map_, true);
-    ros::param::param<bool>("publish_tf", publish_tf, true);
-    ros::param::param<std::string>("merged_map_topic", merged_map_topic, "merged_map");
-    ros::param::param<std::string>("world_frame", world_frame_, "world");
+    node_->param<double>("merging_rate", merging_rate, 0.3);
+    node_->param<bool>("publish_merged_map", publish_merged_map_, true);
+    node_->param<bool>("publish_tf", publish_tf, true);
+    node_->param<std::string>("merged_map_topic", merged_map_topic, "merged_map");
+    node_->param<std::string>("world_frame", world_frame_, "world");
 
     // Create publisher
     map_publisher_ = node->advertise<nav_msgs::OccupancyGrid>(merged_map_topic, 10);

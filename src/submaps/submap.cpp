@@ -28,7 +28,7 @@
 
 using namespace map_merge_2d;
 
-SubMap::SubMap(ros::NodeHandle *node, std::string map_topic) 
+SubMap::SubMap(std::shared_ptr<ros::NodeHandle> node, std::string map_topic) 
 :   available(false),
     name(ros_names::parentNamespace(map_topic)),
     known_pose_(false)
@@ -43,10 +43,10 @@ SubMap::SubMap(ros::NodeHandle *node, std::string map_topic)
     std::string map_namespace = ros_names::parentNamespace(map_topic);
 
     double x, y, z, yaw;
-    if (ros::param::get(ros_names::append(map_namespace, "init_pose_x").erase(0,1), x) &&
-        ros::param::get(ros_names::append(map_namespace, "init_pose_y").erase(0,1), y) &&
-        ros::param::get(ros_names::append(map_namespace, "init_pose_z").erase(0,1), z) &&
-        ros::param::get(ros_names::append(map_namespace, "init_pose_yaw").erase(0,1), yaw) )
+    if (node->getParam(ros_names::append(map_namespace, "init_pose_x").erase(0,1), x) &&
+        node->getParam(ros_names::append(map_namespace, "init_pose_y").erase(0,1), y) &&
+        node->getParam(ros_names::append(map_namespace, "init_pose_z").erase(0,1), z) &&
+        node->getParam(ros_names::append(map_namespace, "init_pose_yaw").erase(0,1), yaw) )
     {
         transform_.setOrigin(tf2::Vector3(x, y, z));
         tf2::Quaternion q;
