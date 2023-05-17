@@ -42,7 +42,7 @@ MapMerger::MapMerger()
   node_->param<std::string>("merged_map_topic", merged_map_topic, "merged_map");
 
   info.exclusions.emplace_back(ros_names::append(ros::this_node::getName(), merged_map_topic));
-  info.topic_type = "nav_msgs/msg/OccupancyGrid";
+  info.topic_type = "nav_msgs/OccupancyGrid";
 
   // start topic discovery
   map_discovery_ = std::make_shared<TopicDiscovery>(node_, info, 
