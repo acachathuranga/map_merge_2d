@@ -1,0 +1,6 @@
+<launch>	
+  <!-- Launch the dock controller node -->
+  <node pkg="map_merge_2d" type="map_merge_2d_node" name="map_merge_2d" output="screen">
+    <rosparam command="load" file="$(find map_merge_2d)/config/params.yaml" />
+  </node>
+</launch>
