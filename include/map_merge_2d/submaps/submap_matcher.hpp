@@ -57,6 +57,7 @@ namespace map_merge_2d
         private:
             bool has_known_tf(std::vector<SubMap::Map> maps);
             bool has_known_tf(std::vector<SubMap::Map> maps, std::map<int, cv::Mat> estimates, std::vector<int> &idx);
+            double get_overlap(nav_msgs::OccupancyGrid map1, nav_msgs::OccupancyGrid map2, tf2::Transform map1_tf, tf2::Transform map2_tf);
 
             std::shared_ptr<ros::NodeHandle> node_;
             MatcherOptions options_;

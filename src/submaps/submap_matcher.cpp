@@ -240,6 +240,96 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
 }
 
 /**
+ * @brief Calculates obstacle overlap between given two occupancy grids using two given map transforms
+ * 
+ * @param map1 
+ * @param map2 
+ * @param map1_tf 
+ * @param map2_tf 
+ * @return double       Overlapping obstacle pixel count
+ */
+double SubMapMatcher::get_overlap(nav_msgs::OccupancyGrid map1, nav_msgs::OccupancyGrid map2, tf2::Transform map1_tf, tf2::Transform map2_tf)
+{
+    // Occupancy grids
+    std::vector<nav_msgs::OccupancyGrid> maps;
+    maps.reserve(2);
+    maps.push_back(map1);
+    maps.push_back(map2);
+
+    // Transforms
+    std::vector<tf2::Transform> tfs;
+    tfs.reserve(2);
+    tfs.push_back(map1_tf);
+    tfs.push_back(map2_tf);
+
+    // CV Transforms
+    std::vector<cv::Mat> cv_tfs;
+    cv_tfs.reserve(maps.size());
+
+    // Transformed maps
+    std::vector<cv_core::CVImage> transformed_maps;
+    transformed_maps.reserve(maps.size());
+
+    // Convert OccupancyGrids to CV Mat
+    std::vector<cv::Mat> cv_maps;
+    cv_maps.reserve(maps.size());
+
+    // Common Canvas Region
+    int min_x = 0;
+    int min_y = 0;
+    int max_x = 0;
+    int max_y = 0;
+
+    for (uint id = 0; id < maps.size(); id++)
+    {
+        cv_maps.emplace_back(maps.at(id).info.height, maps.at(id).info.width, CV_8UC1, maps.at(id).data.data());
+
+        // Calculate CV Transforms
+        /* The map transform is inverted, because for merging, we need to remove the existing frame shift */
+        cv_tfs.emplace_back(tf_utils::tf2_to_cv_transform(
+            maps.at(id).info.resolution, tfs.at(id) * tf_utils::get_map_origin_tf(
+                maps.at(id).info).inverse()));
+        
+        // Transform map image
+        cv_core::CVImage transformed_map;
+        cv_core::image_transform(cv_core::CVImage(cv_maps.at(id)), transformed_map, cv_tfs.at(id));
+        transformed_maps.emplace_back(transformed_map);
+
+        // Check map bounds
+        if (min_x > transformed_map.origin.x) min_x = transformed_map.origin.x;
+        if (min_y > transformed_map.origin.y) min_y = transformed_map.origin.y;
+        if (max_x < (transformed_map.origin.x + transformed_map.image.cols)) max_x = (transformed_map.origin.x + transformed_map.image.cols);
+        if (max_y < (transformed_map.origin.y + transformed_map.image.rows)) max_y = (transformed_map.origin.y + transformed_map.image.rows);    
+    }
+
+    cv::Size dsize(max_x - min_x, max_y - min_y);
+    std::vector<cv::Mat> common_roi_maps;
+    common_roi_maps.reserve(transformed_maps.size());
+    
+    for (auto &image : transformed_maps)
+    {
+        /* Translate all images by minimum offsets + individual image offset */
+        /* This will align all maps to optimal positive pixel coefficient area */
+        double translation_mat[] = {1, 0, (-min_x + image.origin.x), 
+                                    0, 1, (-min_y + image.origin.y)};
+        cv::Mat transform = cv::Mat(2, 3, CV_64FC1, translation_mat);
+
+        cv::Mat dest;
+        cv::warpAffine(image.image, dest, transform, dsize, cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar(255)); // 255: White border
+        common_roi_maps.emplace_back(dest);
+    }
+
+    // Remove unknown region from both maps
+    common_roi_maps.at(0).setTo(0, common_roi_maps.at(0) == 255);
+    common_roi_maps.at(1).setTo(0, common_roi_maps.at(1) == 255);
+
+    // Calculating overlap
+    cv::Mat cross_map = common_roi_maps.at(0).mul(common_roi_maps.at(1));
+    cross_map.setTo(1, cross_map > 0);
+    return cv::sum(cross_map)[0];
+}
+
+/**
  * @brief Check for any map with known transforms
  * 
  * @param maps 
