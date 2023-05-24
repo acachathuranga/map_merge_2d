@@ -221,16 +221,16 @@ cv_core::CVImage SubMapMerger::merge_map_images(std::vector<cv_core::CVImage> im
     }
     merged_map_obstacles.copyTo(merged_image.image, merged_map_obstacles > 0); // Copy obstacle values to merged map
 
-    for (auto &image : transformed_images)
-    {
-        /**
-         * @brief Copy  all known free areas to merged map
-         * 
-         * if corresponding pixel in a sub map is known-free -> 0
-         * Then mark merged map pixel as known-free.
-         */
-        merged_image.image.setTo(0,  image == 0); 
-    }
+    // for (auto &image : transformed_images)
+    // {
+    //     /**
+    //      * @brief Copy  all known free areas to merged map
+    //      * 
+    //      * if corresponding pixel in a sub map is known-free -> 0
+    //      * Then mark merged map pixel as known-free.
+    //      */
+    //     merged_image.image.setTo(0,  image == 0); 
+    // }
 
     // cv::Mat scaled_image;
     // cv::Size scale(dsize.width * 3, dsize.height * 3);
