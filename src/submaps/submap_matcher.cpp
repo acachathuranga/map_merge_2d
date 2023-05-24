@@ -196,6 +196,24 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
                                                     relative_transform.second).inverse() *
                                                 tf_utils::get_map_origin_tf(
                                                     maps.at(relative_transform.first).map.info);
+            
+            double overlap = get_overlap(maps.at(anchor_maps.front()).map,
+                                    maps.at(relative_transform.first).map,
+                                    maps.at(anchor_maps.front()).transform_,
+                                    submap_transform);
+
+            // If submap transform known, check overlap change
+            if (maps.at(relative_transform.first).known_pose)
+            {
+                double current_overlap = get_overlap(maps.at(anchor_maps.front()).map,
+                                            maps.at(relative_transform.first).map,
+                                            maps.at(anchor_maps.front()).transform_,
+                                            maps.at(relative_transform.first).transform_);
+                
+                // If new transform results in lesser map overlap, ignore new transform
+                if (overlap < current_overlap) return;
+            }
+
             //if (transform_confidence.at(relative_transform.first) > maps.at(relative_transform.first).transform_confidence_)
             {
                 double x =  submap_transform.getOrigin().getX();
@@ -223,6 +241,7 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
 
                 ROS_INFO_STREAM(ros::this_node::getName() << " : [SubMapMatcher] : " << "Map " << maps.at(relative_transform.first).name_ << "transform updated.\n " <<
                                                         "confidence: " << transform_confidence.at(relative_transform.first) <<
+                                                        "\n overlap: " << overlap <<
                                                         "\ntransform[x, y, q.z]: [" << x << ", "  << y << ", " << q_z << "]");
                 submaps.at(relative_transform.first)->update_transform(submap_transform, 
                                                                         transform_confidence.at(relative_transform.first));
