@@ -5,7 +5,7 @@ map_namespace: multijackal
 
 # Map matching
 matching_rate: 0.3
-matching_confidence: 0.3
+matching_confidence: 0.7
 
 # Map merging
 merging_rate: 0.6
