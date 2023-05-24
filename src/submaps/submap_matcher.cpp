@@ -117,6 +117,13 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
 
         /* For feature mapping, we do not consider 'known free' area. Only obstacles */
         cv_maps.back().setTo(255, cv_maps.back() == 0);
+
+        /* Obstacle Dilation for better feature extraction */
+        cv::Mat kernel = cv::getStructuringElement( 0, cv::Size(4, 4));
+        cv::Mat dilated_map;
+        cv::erode(cv_maps.back(), dilated_map, kernel); // Map CV image is color inverted. 
+                                                        // Hence obstacle dilation is done with CV erosion
+        dilated_map.copyTo(cv_maps.back());
     }
     cv_maps.shrink_to_fit();
 
