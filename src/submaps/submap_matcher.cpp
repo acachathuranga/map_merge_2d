@@ -196,31 +196,30 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
                                                     relative_transform.second).inverse() *
                                                 tf_utils::get_map_origin_tf(
                                                     maps.at(relative_transform.first).map.info);
-
-            if (transform_confidence.at(relative_transform.first) > maps.at(relative_transform.first).transform_confidence_)
+            //if (transform_confidence.at(relative_transform.first) > maps.at(relative_transform.first).transform_confidence_)
             {
                 double x =  submap_transform.getOrigin().getX();
                 double y = submap_transform.getOrigin().getY();
                 double q_z = submap_transform.getRotation().getZ();
 
-                if (maps.at(relative_transform.first).known_pose)
-                {
-                    // Add transform validity check using existing transfrom 
-                    // (Sudden large deviations in transforms should indicate some error)
-                    double prev_x = maps.at(relative_transform.first).transform_.getOrigin().getX();
-                    double prev_y = maps.at(relative_transform.first).transform_.getOrigin().getY();
-                    double prev_q_z = maps.at(relative_transform.first).transform_.getRotation().getZ();
+                // if (maps.at(relative_transform.first).known_pose)
+                // {
+                //     // Add transform validity check using existing transfrom 
+                //     // (Sudden large deviations in transforms should indicate some error)
+                //     double prev_x = maps.at(relative_transform.first).transform_.getOrigin().getX();
+                //     double prev_y = maps.at(relative_transform.first).transform_.getOrigin().getY();
+                //     double prev_q_z = maps.at(relative_transform.first).transform_.getRotation().getZ();
 
-                    if ( (abs(prev_x - x) + abs(prev_y - y) > 5.0) || (abs(prev_q_z - q_z) > 1.0) )
-                    {
-                        ROS_WARN_STREAM(ros::this_node::getName() << " : [SubMapMatcher] : " <<
-                                                     "Large changes in submap transform detected. Did you set a wrong initial transform?" <<
-                                                    " Other possible causes : opencv feature matcher divergence" <<
-                                                    "\n [x, y, q.z] : " << "[" << prev_x << ", "  << prev_y << ", " << prev_q_z << "]" <<
-                                                    " to [" << x << ", "  << y << ", " << q_z << "]");
-                        return;
-                    }
-                }
+                //     if ( (abs(prev_x - x) + abs(prev_y - y) > 5.0) || (abs(prev_q_z - q_z) > 1.0) )
+                //     {
+                //         ROS_WARN_STREAM(ros::this_node::getName() << " : [SubMapMatcher] : " <<
+                //                                      "Large changes in submap transform detected. Did you set a wrong initial transform?" <<
+                //                                     " Other possible causes : opencv feature matcher divergence" <<
+                //                                     "\n [x, y, q.z] : " << "[" << prev_x << ", "  << prev_y << ", " << prev_q_z << "]" <<
+                //                                     " to [" << x << ", "  << y << ", " << q_z << "]");
+                //         return;
+                //     }
+                // }
 
                 ROS_INFO_STREAM(ros::this_node::getName() << " : [SubMapMatcher] : " << "Map " << maps.at(relative_transform.first).name_ << "transform updated.\n " <<
                                                         "confidence: " << transform_confidence.at(relative_transform.first) <<
