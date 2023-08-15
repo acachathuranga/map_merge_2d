@@ -50,7 +50,7 @@ SubMap::SubMap(std::shared_ptr<ros::NodeHandle> node, std::string map_topic)
     {
         transform_.setOrigin(tf2::Vector3(x, y, z));
         tf2::Quaternion q;
-        q.setEuler(yaw, 0.0, 0.0);
+        q.setRPY(0.0, 0.0, yaw);
         transform_.setRotation(q);
         known_pose_ = true;
         
