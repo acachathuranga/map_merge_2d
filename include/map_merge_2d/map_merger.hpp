@@ -37,6 +37,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
+#include <tf2_msgs/TFMessage.h>
 #include <map_merge_2d/submaps/submap.hpp>
 #include <map_merge_2d/util/topic_name_utils.hpp>
 #include <map_merge_2d/map_discovery/topic_discovery.hpp>
@@ -54,11 +55,15 @@ namespace map_merge_2d
             void topic_discovery_callback(std::string topic_name);
             std::vector<std::shared_ptr<SubMap>> get_submaps();
             void publish_tf(void);
+            void map_tf_callback(tf2_msgs::TFMessage msg);
 
             std::shared_ptr<TopicDiscovery> map_discovery_;
             std::shared_ptr<SubMapMatcher> map_matcher_;
             std::shared_ptr<SubMapMerger> map_merger_;
             std::shared_ptr<ros::NodeHandle> node_;
+
+            ros::Subscriber map_tf_subscriber_;
+            std::string world_frame_;
 
             // Protected variables - to be accessed with thread safety only
             std::vector<std::shared_ptr<SubMap>> submaps_;
