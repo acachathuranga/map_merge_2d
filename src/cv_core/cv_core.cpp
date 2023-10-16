@@ -205,6 +205,8 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   /* use only matches that has enough confidence. leave out matches that are not connected (small components) */
   good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
 
+  try 
+  {
   /* estimate transform */
   if (!(*estimator)(image_features, pairwise_matches, transforms)) 
   {
@@ -224,6 +226,14 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
     std::cout << "Bundle adjusting failed. Could not estimate transforms." << std::endl;
     return image_transforms;
   }
+  }
+  catch (const cv::Exception &ex)
+  {
+    std::cout << "Error: Matching failed" << std::endl;
+    // std::cout << ex.msg << std::endl;
+    return image_transforms;
+  }
+  
 
   // Get confidence map
   std::map<int, double> confidence_score;
