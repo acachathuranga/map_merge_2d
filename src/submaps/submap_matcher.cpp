@@ -55,6 +55,7 @@ SubMapMatcher::SubMapMatcher(std::shared_ptr<ros::NodeHandle> node, std::functio
     // Get Parameters
     node_->param<double>("matching_rate", matching_rate, 0.3);
     node_->param<double>("matching_confidence", options_.confidence, 0.5);
+    node_->param<int>("dilation", options_.dilation, 4);
 
     // Create timers
     matcher_timer_ = node_->createTimer(ros::Duration(1.0/matching_rate),
@@ -119,7 +120,7 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
         cv_maps.back().setTo(255, cv_maps.back() == 0);
 
         /* Obstacle Dilation for better feature extraction */
-        cv::Mat kernel = cv::getStructuringElement( 0, cv::Size(4, 4));
+        cv::Mat kernel = cv::getStructuringElement( 0, cv::Size(options_.dilation, options_.dilation));
         cv::Mat dilated_map;
         cv::erode(cv_maps.back(), dilated_map, kernel); // Map CV image is color inverted. 
                                                         // Hence obstacle dilation is done with CV erosion

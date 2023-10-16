@@ -5,7 +5,8 @@ map_namespace: multijackal
 
 # Map matching
 matching_rate: 0.3
-matching_confidence: 0.7
+matching_confidence: 0.7 #reduce this if the maps won't merge | default: 0.7 (Tested min 0.3)
+dilation: 4 # Obstacle dilation
 
 # Map merging
 merging_rate: 0.6
