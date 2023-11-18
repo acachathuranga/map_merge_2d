@@ -205,23 +205,32 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   /* use only matches that has enough confidence. leave out matches that are not connected (small components) */
   good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
 
-  /* estimate transform */
-  if (!(*estimator)(image_features, pairwise_matches, transforms)) 
+  try 
   {
-    std::cout << "Error: Cannot estimate transform" << std::endl;
-    return image_transforms;
-  }
+    /* estimate transform */
+    if (!(*estimator)(image_features, pairwise_matches, transforms)) 
+    {
+      std::cout << "Error: Cannot estimate transform" << std::endl;
+      return image_transforms;
+    }
 
-  /* levmarq optimization */
-  // openCV just accepts float transforms
-  for (auto& transform : transforms) {
-    transform.R.convertTo(transform.R, CV_32F);
-  }
+    /* levmarq optimization */
+    // openCV just accepts float transforms
+    for (auto& transform : transforms) {
+      transform.R.convertTo(transform.R, CV_32F);
+    }
 
-  // TODO Fix? Bundle adjustment results in incorrect transformations for test images. Hence removed
-  adjuster->setConfThresh(confidence);
-  if (!(*adjuster)(image_features, pairwise_matches, transforms)) {
-    std::cout << "Bundle adjusting failed. Could not estimate transforms." << std::endl;
+    // TODO Fix? Bundle adjustment results in incorrect transformations for test images. Hence removed
+    adjuster->setConfThresh(confidence);
+    if (!(*adjuster)(image_features, pairwise_matches, transforms)) {
+      std::cout << "Bundle adjusting failed. Could not estimate transforms." << std::endl;
+      return image_transforms;
+    }
+  }
+  catch (const cv::Exception &ex)
+  {
+    std::cout << "Error: Matching failed" << std::endl;
+    // std::cout << ex.msg << std::endl;
     return image_transforms;
   }
 
