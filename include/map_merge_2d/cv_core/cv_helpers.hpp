@@ -76,8 +76,7 @@ namespace map_merge_2d
                     image_features[size_t(match_info.src_img_idx)].keypoints,
                     images[size_t(match_info.dst_img_idx)],
                     image_features[size_t(match_info.dst_img_idx)].keypoints,
-                    match_info.matches, img, cv::Scalar::all(-1), cv::Scalar::all(-1),
-                    *reinterpret_cast<const std::vector<char>*>(&match_info.inliers_mask));
+                    match_info.matches, img, cv::Scalar::all(-1), cv::Scalar::all(-1)); // , *reinterpret_cast<const std::vector<char>*>(&match_info.inliers_mask)
                 // cv::imwrite(std::to_string(match_info.src_img_idx) + "_" +
                 //                 std::to_string(match_info.dst_img_idx) +
                 //                 "_matches_inliers.png",
