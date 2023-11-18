@@ -389,13 +389,14 @@ bool SubMapMatcher::has_known_tf(std::vector<SubMap::Map> maps, std::map<int, cv
 {
     idx.clear();
 
-    for (auto &estimate : estimates)
+    for (int i = 0 ; i < maps.size(); i++)
     {
-        if (maps.at(estimate.first).known_pose)
-        {
-            idx.emplace_back(estimate.first);
+        if (maps.at(i).known_pose) {
+            if (estimates.find(i) != estimates.end() ) {
+                idx.emplace_back(i);
+            }
         }
-    } 
+    }
 
     if (idx.size())
     {
