@@ -168,6 +168,9 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   std::vector<cv::detail::MatchesInfo> pairwise_matches;
   (*matcher)(image_features, pairwise_matches);
 
+  /* Filter outliers */
+  // filter_outliers(pairwise_matches, outlier_rejection);
+
   /* Filter diverging matches */
   for (long unsigned int idx = 0; idx < pairwise_matches.size(); idx++)
   {
@@ -218,7 +221,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
       transform.R.convertTo(transform.R, CV_32F);
     }
 
-    // TODO Fix? Bundle adjustment results in incorrect transformations for test images. Hence removed
+    // Bundle adjustment
     adjuster->setConfThresh(confidence);
     if (!(*adjuster)(image_features, pairwise_matches, transforms)) {
       std::cout << "Bundle adjusting failed. Could not estimate transforms." << std::endl;
@@ -256,4 +259,39 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   }
 
   return image_transforms;
+}
+
+void cv_core::filter_outliers(std::vector<cv::detail::MatchesInfo> &pairwise_matches, int min_inliers)
+{
+  for (uint id = 0; id < pairwise_matches.size(); id++)
+  {
+    if (pairwise_matches[id].matches.size() <= 0 ) continue;
+
+    std::vector<cv::DMatch> matches = pairwise_matches[id].matches;
+    pairwise_matches[id].matches.clear();
+    pairwise_matches[id].matches.reserve(matches.size());
+    for (uint sid = 0 ; sid < matches.size(); sid++)
+    {
+      if (pairwise_matches[id].inliers_mask[sid])
+      {
+         pairwise_matches[id].matches.push_back(matches[sid]);
+      }
+    }
+    
+    pairwise_matches[id].matches.shrink_to_fit();
+    if (pairwise_matches[id].matches.size() < min_inliers)
+    {
+      pairwise_matches[id].matches.clear();
+      pairwise_matches[id].inliers_mask.clear();
+      pairwise_matches[id].num_inliers = 0;
+    }
+    else
+    {
+      pairwise_matches[id].inliers_mask.resize(pairwise_matches[id].matches.size());
+      std::fill(pairwise_matches[id].inliers_mask.begin(), pairwise_matches[id].inliers_mask.end(), 1);
+      pairwise_matches[id].num_inliers = pairwise_matches[id].matches.size();
+    }
+  }
+
+  return;
 }
