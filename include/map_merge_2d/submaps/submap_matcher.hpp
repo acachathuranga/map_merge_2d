@@ -46,6 +46,7 @@ namespace map_merge_2d
             struct MatcherOptions
             {
                 double confidence = 0.5;
+                int blur_radius = 9;
             };
 
             SubMapMatcher(MatcherOptions options);

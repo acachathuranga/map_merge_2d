@@ -97,6 +97,7 @@ namespace map_merge_2d
 
         void image_transform(const CVImage src, CVImage &dest, cv::Mat transform);
         std::map<int, cv::Mat> estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence,
+                                                    std::map<int, double> &estimation_confidences, int blur_radius = 9);
         void filter_outliers(std::vector<cv::detail::MatchesInfo> &pairwise_matches, int min_inliers);
     } // namespace cv_core
 

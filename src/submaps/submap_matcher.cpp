@@ -55,6 +55,7 @@ SubMapMatcher::SubMapMatcher(std::shared_ptr<ros::NodeHandle> node, std::functio
     // Get Parameters
     node_->param<double>("matching_rate", matching_rate, 0.3);
     node_->param<double>("matching_confidence", options_.confidence, 0.5);
+    node_->param<int>("blur_kernel_size", options_.blur_radius, 9);
 
     // Create timers
     matcher_timer_ = node_->createTimer(ros::Duration(1.0/matching_rate),
@@ -142,7 +143,8 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
     std::map<int, cv::Mat> relative_transforms = cv_core::estimateTransforms(cv_maps, 
                                                         cv_core::FeatureType::AKAZE, 
                                                         options_.confidence,
-                                                        transform_confidence);
+                                                        transform_confidence,
+                                                        options_.blur_radius);
 
     /* Check if sufficient matches available. Else abort */
     if (relative_transforms.size() < 2)

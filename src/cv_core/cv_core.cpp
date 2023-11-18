@@ -117,7 +117,7 @@ void cv_core::image_transform(const CVImage src, CVImage &dest, cv::Mat transfor
 } 
 
 std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence,
-                                                    std::map<int, double> &estimation_confidences)
+                                                    std::map<int, double> &estimation_confidences, int blur_radius)
 {
   std::map<int, cv::Mat> image_transforms;
 
@@ -130,6 +130,16 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   {
     std::cout << "No images to match" << std::endl;
     return image_transforms;
+  }
+
+  // Apply Gaussian blur to images
+  std::vector<cv::Mat> images_bak = images;
+  images.clear();
+  for (auto image : images_bak)
+  {
+    cv::Mat img;
+    cv::GaussianBlur(image, img, cv::Size(blur_radius, blur_radius), 0);
+    images.push_back(img);
   }
 
   /* find features in images */
