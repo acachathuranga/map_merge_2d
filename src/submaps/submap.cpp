@@ -65,6 +65,15 @@ SubMap::SubMap(std::shared_ptr<ros::NodeHandle> node, std::string map_topic)
         transform_.setIdentity();
     }
     
+    // Check if static merge map
+    bool static_map;
+    node->param<bool>(ros_names::append(map_namespace, "static_merge").erase(0,1), static_map, false);
+    static_merge = static_map;
+    if (static_merge)
+    {
+        ROS_INFO("%s : %s : is marked for static merge", ros::this_node::getName().c_str(), map_topic.c_str());
+    }
+    
     subscriber_ = node->subscribe<nav_msgs::OccupancyGrid>(map_topic, 10, &SubMap::update_map, this);
 
 }

@@ -68,6 +68,16 @@ void SubMapMatcher::match(void)
 
 void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
 {
+    // Remove static merge maps
+    for (auto itr = submaps.begin(); itr != submaps.end(); )
+    {
+        if (itr->get()->static_merge) {
+            itr = submaps.erase(itr);
+        } else {
+            itr++;
+        }
+    }
+
     // Submap vector should at least have one map
     if (submaps.size() < 1)
     {

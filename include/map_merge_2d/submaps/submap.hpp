@@ -59,6 +59,7 @@ namespace map_merge_2d
             void update_transform(tf2::Transform transform, double confidence);
 
             std::atomic<bool> available;
+            std::atomic<bool> static_merge;
             const std::string name;
 
         private:
