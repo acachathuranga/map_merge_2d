@@ -119,11 +119,6 @@ void cv_core::image_transform(const CVImage src, CVImage &dest, cv::Mat transfor
 std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, FeatureType feature_type, double confidence,
                                                     std::map<int, double> &estimation_confidences)
 {
-  std::vector<cv::detail::ImageFeatures> image_features;
-  std::vector<cv::detail::MatchesInfo> pairwise_matches;
-  std::vector<cv::detail::CameraParams> transforms;
-  std::vector<uint> feature_available_image_indices;
-  std::vector<int> good_indices;
   std::map<int, cv::Mat> image_transforms;
 
   auto finder = chooseFeatureFinder(feature_type);
@@ -138,7 +133,9 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   }
 
   /* find features in images */
+  std::vector<cv::detail::ImageFeatures> image_features;
   std::vector<cv::detail::ImageFeatures> features;
+  std::vector<uint> feature_available_image_indices;
   int image_index = 0;
   for (const cv::Mat& image : images) {
     features.emplace_back();
@@ -175,6 +172,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   }
   
   /* find corespondent features */
+  std::vector<cv::detail::MatchesInfo> pairwise_matches;
   (*matcher)(image_features, pairwise_matches);
 
   for (long unsigned int idx = 0; idx < pairwise_matches.size(); idx++)
@@ -203,8 +201,10 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   #endif
 
   /* use only matches that has enough confidence. leave out matches that are not connected (small components) */
+  std::vector<int> good_indices;
   good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
 
+  std::vector<cv::detail::CameraParams> transforms;
   try 
   {
     /* estimate transform */
