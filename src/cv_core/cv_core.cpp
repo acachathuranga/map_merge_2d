@@ -133,48 +133,42 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   }
 
   /* find features in images */
+  std::vector<int> image_indexes;
   std::vector<cv::detail::ImageFeatures> image_features;
-  std::vector<cv::detail::ImageFeatures> features;
-  std::vector<uint> feature_available_image_indices;
-  int image_index = 0;
-  for (const cv::Mat& image : images) {
-    features.emplace_back();
-    if (!image.empty()) {
+  for (uint id = 0; id < images.size(); id++)
+  {
+    if (!images[id].empty()) {
+      cv::detail::ImageFeatures features;
+
       #if CV_VERSION_MAJOR >= 4
-      cv::detail::computeImageFeatures(finder, image, features.back());
+      cv::detail::computeImageFeatures(finder, images[id], features);
       #else
-      (*finder)(image, features.back());
+      (*finder)(image, features);
       #endif
-      if (features.back().keypoints.size() >= 2)
+      if (features.keypoints.size() > 2)
       {
-        // Record index of feature available image, for matching
-        feature_available_image_indices.emplace_back(image_index);
+        image_indexes.emplace_back(id);
+        image_features.emplace_back(features);
       }
       else
       {
-        std::cout << "No features in image" + std::to_string(image_index) << std::endl;
+        std::cout << "No features in image" + std::to_string(id) << std::endl;
       }
     }
-    image_index++;
   }
 
-  /* Filter images without features */
-  if (feature_available_image_indices.size() < 2)
+  /* Check if enough images with features */
+  if (image_indexes.size() < 2)
   {
     // No pairs to match
     return image_transforms;
-  }
-  image_features.reserve(feature_available_image_indices.size());
-  for (uint i = 0; i < feature_available_image_indices.size(); i++)
-  {
-    image_features.emplace_back();
-    image_features.at(i) = features.at(feature_available_image_indices.at(i));
   }
   
   /* find corespondent features */
   std::vector<cv::detail::MatchesInfo> pairwise_matches;
   (*matcher)(image_features, pairwise_matches);
 
+  /* Filter diverging matches */
   for (long unsigned int idx = 0; idx < pairwise_matches.size(); idx++)
   {
     // Creating match index histogram
@@ -193,16 +187,20 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
         break;
       }
     }
-    
+  }
+
+  std::vector<cv::Mat> filtered_images;
+  for (auto index : image_indexes)
+  {
+    filtered_images.emplace_back(images[index]);
   }
 
   #ifndef NDEBUG
-    cv_core_helper::writeDebugMatchingInfo(images, image_features, pairwise_matches);
+    cv_core_helper::writeDebugMatchingInfo(filtered_images, image_features, pairwise_matches);
   #endif
 
   /* use only matches that has enough confidence. leave out matches that are not connected (small components) */
-  std::vector<int> good_indices;
-  good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
+  std::vector<int> good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
 
   std::vector<cv::detail::CameraParams> transforms;
   try 
@@ -256,7 +254,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
     for (uint i = 0; i < good_indices.size(); i++)
     {
       // insert estimated transforms into image_transforms, selecting 2D affine matrix only [2d rot, 2d trans]
-      image_transforms.insert({feature_available_image_indices.at(good_indices.at(i)), transforms.at(i).R(cv::Range(0,2), cv::Range(0,3))});
+      image_transforms.insert({image_indexes.at(good_indices.at(i)), transforms.at(i).R(cv::Range(0,2), cv::Range(0,3))});
       estimation_confidences[good_indices.at(i)] = confidence_score[good_indices.at(i)];
     }
   }
