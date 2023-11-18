@@ -264,7 +264,7 @@ void SubMapMerger::publish_map_transforms(std::vector<SubMap::Map> maps)
         geometry_msgs::TransformStamped transform;
         transform.header.frame_id = world_frame_;
         transform.header.stamp = ros::Time::now();
-        transform.child_frame_id = map.name_;
+        transform.child_frame_id = map.name_ + "/map";
 
         tf2::Vector3 origin = map.transform_.getOrigin();
         tf2::Quaternion rotation = map.transform_.getRotation();
