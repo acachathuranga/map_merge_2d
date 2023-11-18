@@ -57,6 +57,9 @@ SubMapMatcher::SubMapMatcher(std::shared_ptr<ros::NodeHandle> node, std::functio
     node_->param<double>("matching_confidence", options_.confidence, 0.5);
     node_->param<int>("dilation", options_.dilation, 4);
     node_->param<int>("blur_kernel_size", options_.blur_radius, 9);
+    node_->param<bool>("refine_transforms", options_.refine_transforms, true);
+    node_->param<double>("refiner_radius", options_.refiner_radius, 3.0);
+    node_->param<double>("refiner_resolution", options_.refiner_resolution, 0.3);
 
     // Create timers
     matcher_timer_ = node_->createTimer(ros::Duration(1.0/matching_rate),
@@ -210,6 +213,15 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
                                                 tf_utils::get_map_origin_tf(
                                                     maps.at(relative_transform.first).map.info);
             
+            if (options_.refine_transforms)
+            {
+                submap_transform = refine_transform(maps.at(anchor_maps.front()).map,
+                                                    maps.at(relative_transform.first).map,
+                                                    maps.at(anchor_maps.front()).transform_,
+                                                    submap_transform,
+                                                    options_.refiner_radius, options_.refiner_resolution);
+            }
+
             double overlap = get_overlap(maps.at(anchor_maps.front()).map,
                                     maps.at(relative_transform.first).map,
                                     maps.at(anchor_maps.front()).transform_,
@@ -268,6 +280,39 @@ void SubMapMatcher::match(std::vector<std::shared_ptr<SubMap>> submaps)
             unlinked_anchor_msg += maps.at(itr.first).name_ + " ";
         ROS_WARN_STREAM(ros::this_node::getName() << " : [SubMapMatcher] : " << unlinked_anchor_msg);
     }
+}
+
+tf2::Transform SubMapMatcher::refine_transform(nav_msgs::OccupancyGrid map1, nav_msgs::OccupancyGrid map2, tf2::Transform map1_tf, tf2::Transform map2_tf,
+                                                double refiner_space, double refiner_resolution)
+{
+    double max_overlap = 0.0;
+    double max_x_o, max_y_o;
+    int steps = refiner_space / refiner_resolution;
+    for (int x_o= -steps; x_o < steps; x_o++)
+    {   
+        for (int y_o= -steps; y_o < steps; y_o++)
+        {
+            tf2::Transform map2_tf_offsetted = map2_tf;
+            tf2::Vector3 origin = map2_tf.getOrigin();
+            origin.setX(origin.getX() + refiner_resolution * x_o);
+            origin.setY(origin.getY() + refiner_resolution * y_o);
+            map2_tf_offsetted.setOrigin(origin);
+            double overlap = get_overlap(map1, map2, map1_tf, map2_tf_offsetted);
+            if (overlap > max_overlap)
+            {
+                max_x_o = x_o;
+                max_y_o = y_o;
+                max_overlap = overlap;
+            }
+        }
+    }
+
+    tf2::Transform tf_refined = map2_tf;
+    tf2::Vector3 origin = map2_tf.getOrigin();
+    origin.setX(origin.getX() + refiner_resolution * max_x_o);
+    origin.setY(origin.getY() + refiner_resolution * max_y_o);
+    tf_refined.setOrigin(origin);
+    return tf_refined;
 }
 
 /**

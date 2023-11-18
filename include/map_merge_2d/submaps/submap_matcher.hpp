@@ -48,6 +48,9 @@ namespace map_merge_2d
                 double confidence = 0.5;
                 int dilation = 4;
                 int blur_radius = 9;
+                bool refine_transforms = true;
+                double refiner_radius = 3.0;
+                double refiner_resolution = 0.3;
             };
 
             SubMapMatcher(MatcherOptions options);
@@ -60,6 +63,8 @@ namespace map_merge_2d
             bool has_known_tf(std::vector<SubMap::Map> maps);
             bool has_known_tf(std::vector<SubMap::Map> maps, std::map<int, cv::Mat> estimates, std::vector<int> &idx);
             double get_overlap(nav_msgs::OccupancyGrid map1, nav_msgs::OccupancyGrid map2, tf2::Transform map1_tf, tf2::Transform map2_tf);
+            tf2::Transform refine_transform(nav_msgs::OccupancyGrid map1, nav_msgs::OccupancyGrid map2, tf2::Transform map1_tf, tf2::Transform map2_tf,
+                                            double refiner_space, double refiner_resolution);
 
             std::shared_ptr<ros::NodeHandle> node_;
             MatcherOptions options_;
