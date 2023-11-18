@@ -200,7 +200,7 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
   #endif
 
   /* use only matches that has enough confidence. leave out matches that are not connected (small components) */
-  std::vector<int> good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
+  // std::vector<int> good_indices = cv::detail::leaveBiggestComponent(image_features, pairwise_matches, static_cast<float>(confidence));
 
   std::vector<cv::detail::CameraParams> transforms;
   try 
@@ -248,15 +248,11 @@ std::map<int, cv::Mat> cv_core::estimateTransforms(std::vector<cv::Mat> images, 
     match.second = match.second / match_count.at(match.first);
   }
 
-  // If valid matches are found, indice could will be > 2
-  if (good_indices.size() > 1)
+  for (uint id = 0 ; id < image_indexes.size() ; id++)
   {
-    for (uint i = 0; i < good_indices.size(); i++)
-    {
-      // insert estimated transforms into image_transforms, selecting 2D affine matrix only [2d rot, 2d trans]
-      image_transforms.insert({image_indexes.at(good_indices.at(i)), transforms.at(i).R(cv::Range(0,2), cv::Range(0,3))});
-      estimation_confidences[good_indices.at(i)] = confidence_score[good_indices.at(i)];
-    }
+    // insert estimated transforms into image_transforms, selecting 2D affine matrix only [2d rot, 2d trans]
+    image_transforms.insert({image_indexes[id], transforms[id].R(cv::Range(0,2), cv::Range(0,3))});
+    estimation_confidences.insert({image_indexes[id], confidence_score[id]});
   }
 
   return image_transforms;
