@@ -1,13 +1,14 @@
 <launch>	
-  <arg name="namespace" default="robot1"/>
+  <arg name="namespace" default="multijackal_01"/>
   
+  <!-- launch-prefix="xterm -e gdb args" -->
   <!-- Launch the namespaced map merger node -->
   <group ns="$(arg namespace)">
-  <node pkg="map_merge_2d" type="map_merge_2d_node" name="map_merge_2d" output="screen">
+  <node pkg="map_merge_2d" type="map_merge_2d_node" name="map_merge_2d" respawn="false" output="screen" clear_params="true" >
     <rosparam command="load" file="$(find map_merge_2d)/config/params.yaml" />
-      <remap from="map_merge_2d/map" to="map" />
-      <remap from="/tf" to="tf" />
-      <remap from="/tf_static" to="tf_static" />
+      <remap from="map_merge_2d/merged_map" to="merged_map" />
+      <!--remap from="/tf" to="tf" /-->
+      <!--remap from="/tf_static" to="tf_static" /-->
   </node>
   </group>
 

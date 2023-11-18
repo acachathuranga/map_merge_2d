@@ -1,0 +1,22 @@
+<launch>	
+  <arg name="namespace" default="multijackal_01"/>
+    
+   <!-- Launch Map Merge 2D -->
+   <include file ="$(find map_merge_2d)/launch/map_merge_2d.launch"/>
+
+  <!-- Launch the pre-map server -->
+  <node pkg="map_server" type="map_server" args="$(find map_merge_2d)/Maps/map.yaml" name="$(arg namespace)_pre_map_publisher" output="screen">
+      <param name="frame_id" value="multijackal_09/map"/>
+      <remap from="/map" to="/multijackal_09/map" />
+  </node>
+  
+  <!-- Launch Map Merger Plugin -->
+  <node pkg="map_merge_2d" type="map_merge_tf_plugin.py" name="$(arg namespace)_map_merge_2d_plugin" respawn="true" output="screen">
+      <remap from="/tf" to="$(arg namespace)/merged/tf" />
+      <remap from="/tf_static" to="$(arg namespace)/merged/tf_static" />
+  </node>
+
+  <!-- Launch TF Merger -->
+  <include file ="$(find tf_merger)/launch/tf_merger.launch"/>
+  
+</launch>
