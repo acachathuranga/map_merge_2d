@@ -63,7 +63,13 @@ MapMerger::MapMerger()
 void MapMerger::topic_discovery_callback(std::string topic_name)
 {
   std::unique_lock<std::mutex> lock(submap_mutex_);
-  submaps_.emplace_back(std::make_shared<SubMap>(node_, topic_name));
+  std::shared_ptr<SubMap> submap_ptr = std::make_shared<SubMap>(node_, topic_name);
+  if (submap_ptr->get_map().known_pose) {
+    ROS_INFO("Anchor map added :  %s", topic_name.c_str());
+    submaps_.emplace(submaps_.begin(), submap_ptr);
+  } else {
+    submaps_.emplace_back(submap_ptr);
+  }
 }
 
 std::vector<std::shared_ptr<SubMap>> MapMerger::get_submaps()
