@@ -276,7 +276,17 @@ void SubMapMerger::publish_map_transforms(std::vector<SubMap::Map> maps)
         transform.transform.rotation.y = rotation.getY();
         transform.transform.rotation.z = rotation.getZ();
         transform.transform.rotation.w = rotation.getW();
-
+        
+	    double q_sum = transform.transform.rotation.x * transform.transform.rotation.x + 
+                        transform.transform.rotation.y * transform.transform.rotation.y + 
+                        transform.transform.rotation.z * transform.transform.rotation.z + 
+                        transform.transform.rotation.w * transform.transform.rotation.w;
+        double q_norm = sqrt(q_sum);
+        transform.transform.rotation.x /= q_norm;
+        transform.transform.rotation.y /= q_norm;
+        transform.transform.rotation.z /= q_norm;
+        transform.transform.rotation.w /= q_norm;
+        
         tf_broadcaster_.sendTransform(transform);
     }
 }
